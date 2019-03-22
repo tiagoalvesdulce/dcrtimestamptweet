@@ -1,0 +1,29 @@
+{
+  "name": "dcrtimestamptweet",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "node -r esm index.js",
+    "test": "nyc riteway -r esm test/*.test.js | tap-nirvana -w"
+  },
+  "devDependencies": {
+    "eslint": "^5.15.2",
+    "eslint-config-prettier": "^4.1.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.16.0",
+    "eslint-plugin-node": "^8.0.1",
+    "eslint-plugin-prettier": "^3.0.1",
+    "eslint-plugin-promise": "^4.0.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "esm": "^3.2.18",
+    "nyc": "^13.3.0",
+    "prettier": "^1.16.4",
+    "riteway": "^6.0.3",
+    "tap-nirvana": "^1.1.0"
+  },
+  "dependencies": {
+    "dotenv": "^7.0.0",
+    "twit": "^2.2.11"
+  }
+}
