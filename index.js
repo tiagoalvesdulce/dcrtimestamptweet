@@ -56,7 +56,7 @@ const dealWithTweet = id => {
   }
 };
 
-const stream = T.stream("statuses/filter", { track: "@dcrtimestampbot" });
+const stream = T.stream("statuses/filter", { track: "@dcrtimestampbot", retry: true });
 
 console.log("streaming...");
 stream.on("tweet", async (tweet) => {
