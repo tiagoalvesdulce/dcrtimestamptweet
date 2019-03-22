@@ -16,14 +16,15 @@
     "eslint-plugin-prettier": "^3.0.1",
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-standard": "^4.0.0",
-    "esm": "^3.2.18",
     "nyc": "^13.3.0",
     "prettier": "^1.16.4",
     "riteway": "^6.0.3",
     "tap-nirvana": "^1.1.0"
   },
   "dependencies": {
+    "esm": "^3.2.20",
     "dotenv": "^7.0.0",
+    "express": "^4.16.4",
     "twit": "^2.2.11"
   }
 }
