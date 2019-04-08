@@ -54,7 +54,7 @@ export const stringify = (obj) => {
 export const encodeToBase64 = (input) => Buffer.from(input).toString("base64");
 export const normalizeDataToDcrtime = input => {
   if (input && typeof input == "string") {
-    return ([{ payload: input }]);
+    return ([input]);
   };
   throw new TypeError("Input should be a string");
 };

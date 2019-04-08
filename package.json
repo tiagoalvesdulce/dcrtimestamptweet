@@ -4,6 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
+    "serve": "node -r esm server.js",
     "start": "node -r esm index.js",
     "test": "nyc riteway -r esm test/*.test.js | tap-nirvana -w"
   },
@@ -22,7 +23,7 @@
     "tap-nirvana": "^1.1.0"
   },
   "dependencies": {
-    "dcrtimejs": "^0.0.2",
+    "dcrtimejs": "0.0.5",
     "dotenv": "^7.0.0",
     "esm": "^3.2.20",
     "express": "^4.16.4",

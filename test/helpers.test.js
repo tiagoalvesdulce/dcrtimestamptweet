@@ -65,6 +65,6 @@ describe("normalizeDataToDcrtime", async (assert) => {
     given: "dGVzdA==",
     should: "return array with 1 object containing a payload key",
     actual: Try(normalizeDataToDcrtime, "dGVzdA=="),
-    expected: [{ payload: "dGVzdA==" }]
+    expected: ["dGVzdA=="]
   });
 });

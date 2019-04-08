@@ -484,10 +484,10 @@ dashdash@^1.12.0:
   dependencies:
     assert-plus "^1.0.0"
 
-dcrtimejs@^0.0.2:
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/dcrtimejs/-/dcrtimejs-0.0.2.tgz#9fc9ff7a240ec4a517a6903758d35c4846a13ad0"
-  integrity sha512-kj/nbs5ok7OHmp5r/3rPlXMD+CqnC9jpAITIdsxLK7hyOJ54v9kVLXX35MmA1ZekYNeqX7wvwl8Ei3Y4xvkYZQ==
+dcrtimejs@0.0.5:
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/dcrtimejs/-/dcrtimejs-0.0.5.tgz#ea0eab9b58c2fbe7652c5af8ea2be80ea13a4c52"
+  integrity sha512-Nr0vjddUJgXIruTxqdyQp/4V3qnpGSB3ywcL7gvQIjsX3TmSq5dLc8zA099eW2tnkfK/C72KNPLC3jZ67t3KVA==
   dependencies:
     crypto-js "^3.1.9-1"
     node-fetch "^2.3.0"
