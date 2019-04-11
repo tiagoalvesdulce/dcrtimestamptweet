@@ -103,6 +103,10 @@ const startStreaming = () => {
   });
   logger.info("Waiting for tweets to show up...");
   stream.on("tweet", async tweet => {
+    const { retweeted_status } = tweet
+    if (retweeted_status) {
+      return;
+    }
     try {
       await dealWithTweet(tweet.id_str);
     } catch (e) {
