@@ -1,17 +1,20 @@
 # Dcrtimestamptweet
 
-Twitter bot to timestamp a thread when @dcrtimestamptweet is mentioned. This bot uses IPFS as a decentralized database to store the tweet thread. 
+Twitter bot to timestamp a thread when a chosen keyword is mentioned. This bot uses IPFS as a decentralized database to store the tweet thread json and uses [dcrtime](https://github.com/decred/dcrtime) for timestamping.
+
 
 ## Installation
 
-1. Make a twitter development app and generate tokens: https://developer.twitter.com/en/docs/basics/authentication/guides/access-tokens.html
+1. Create a twitter account and [apply for access](https://developer.twitter.com/en/apply-for-access.html)
 
-2. Make a .env File
+2. [Generate twitter access tokens](https://developer.twitter.com/en/docs/basics/authentication/guides/access-tokens.html)
+
+3. Make a .env File
     ```
     $ touch .env
     ```
 
-3. Add the generated tokens
+4. Add the generated credentials in the `.env` file
     ```
     TWITTER_CONSUMER_KEY=<GENERATED_API_KEY>
     TWITTER_CONSUMER_SECRET=<GENERATED_API_KEY_SECRET>
@@ -20,34 +23,38 @@ Twitter bot to timestamp a thread when @dcrtimestamptweet is mentioned. This bot
     TRACKED_WORD="@dcrtimestamptweet" // mention which will call the bot
     ```
 
-4. Install IPFS
-    
-    4.1 IPFS Install instructions: https://docs.ipfs.io/introduction/install/
-
-5. Run IPFS Daemon 
-    ```
-    ipfs daemon
-    ```
-
-6. Run yarn command
+5. Run yarn command
     ```
     $ yarn
     ```
 
-7. Start app
+6. Start app
     ```
     yarn start
     ```
 
-Now when TRACKED_WORD is mentioned on some tweet the bot will save the thread at the ipfs and timestamp it and will tweet the hashes.
+Now, when the `TRACKED_WORD` is mentioned on Twitter, the bot will save the thread to IPFS, timestamp it and reply the tweet with the SHA256 hash anchored to [dcrtime](https://github.com/decred/dcrtime) and the IPFS hash.
 
-IPFS JSON generated
 
-```
-[{"user":{"id_str":"892766033714179434","name":"decred bot","screen_name":"decred_bot"},"id_str":"1116353485199556609","created_at":"Thu Apr 11 14:53:06 +0000 2019","text":"this is an awesome test! @dcrtimestamptweet","repliedid":null}]
-```
+7. Example of stringified thread that will be timestamped and saved to IPFS
 
-Which is the file will be timestamped at dcrtime
+    ```
+    [{"user":{"id_str":"892766033714179434","name":"decred bot","screen_name":"decred_bot"},"id_str":"1116353485199556609","created_at":"Thu Apr 11 14:53:06 +0000 2019","text":"this is an awesome test! @dcrtimestamptweet","repliedid":null}]
+    ```
+
+## Further information
+
+It is not necessary to run IPFS in order to make the bot work properly, although it is good running your own daemon instance so you can test changes you've made.
+
+### install IPFS
+
+1. Follow the [IPFS Installation instructions](https://docs.ipfs.io/introduction/install/) 
+
+2. Run IPFS Daemon 
+    ```
+    ipfs daemon
+    ```
+
 
 ## License
 
