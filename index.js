@@ -25,22 +25,26 @@ const processTweetThread = async ({ id }) => {
   try {
     logger.debug(`getting thread for tweet id ${id}`);
     const thread = await getThread({ T, id });
-    const timestampRes = await asyncPipe(
+    const { digests } = await asyncPipe(
       stringify,
       encodeToBase64,
       normalizeDataToDcrtime,
       dcrtime.timestampFromBase64
     )(thread);
-    const ipfsRes = await asyncPipe(stringify, addThreadToIPFS)(thread);
+
+    const digest = digests[0].digest;
+
+    const { hash: ipfsHash } = await asyncPipe(
+      stringify,
+      addThreadToIPFS(digest)
+    )(thread);
 
     logger.info(
-      `Thread added! Ipfs hash: ${ipfsRes.hash} / File digest: ${JSON.stringify(
-        timestampRes.digests[0].digest
-      )}`
+      `Thread added! Ipfs hash: ${ipfsHash} / Thread digest: ${digest}`
     );
     return {
-      threadDigest: timestampRes.digests[0],
-      ipfsHash: ipfsRes.hash,
+      threadDigest: digests[0],
+      ipfsHash,
       id
     };
   } catch (e) {
