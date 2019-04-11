@@ -30,7 +30,7 @@ Twitter bot to timestamp a thread when a chosen keyword is mentioned. This bot u
 
 6. Start app
     ```
-    yarn start
+    $ yarn start
     ```
 
 Now, when the `TRACKED_WORD` is mentioned on Twitter, the bot will save the thread to IPFS, timestamp it and reply the tweet with the SHA256 hash anchored to [dcrtime](https://github.com/decred/dcrtime) and the IPFS hash.
@@ -52,7 +52,7 @@ It is not necessary to run IPFS in order to make the bot work properly, although
 
 2. Run IPFS Daemon 
     ```
-    ipfs daemon
+    $ ipfs daemon
     ```
 
 
