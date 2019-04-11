@@ -1,7 +1,14 @@
 import dotenv from "dotenv";
 import Twit from "twit";
 import dcrtime from "dcrtimejs";
-import { getThread, stringify, encodeToBase64, normalizeDataToDcrtime } from "./helpers";
+import {
+  getThread,
+  stringify,
+  encodeToBase64,
+  normalizeDataToDcrtime
+} from "./helpers";
+import { ipfs, addThreadToIPFS } from "./services/ipfs";
+import logger from "./log";
 
 dotenv.config();
 
@@ -14,19 +21,26 @@ const T = new Twit({
 
 const asyncPipe = (...fns) => x => fns.reduce(async (y, f) => f(await y), x);
 
-const timestampThread = async ({ id }) => {
+const processTweetThread = async ({ id }) => {
   try {
-    console.log("getting thread");
+    logger.debug(`getting thread for tweet id ${id}`);
+    const thread = await getThread({ T, id });
     const timestampRes = await asyncPipe(
-      getThread,
       stringify,
       encodeToBase64,
       normalizeDataToDcrtime,
       dcrtime.timestampFromBase64
-    )({ T, id });
-    console.log("got thread");
+    )(thread);
+    const ipfsRes = await asyncPipe(stringify, addThreadToIPFS)(thread);
+
+    logger.info(
+      `Thread added! Ipfs hash: ${ipfsRes.hash} / File digest: ${JSON.stringify(
+        timestampRes.digests[0].digest
+      )}`
+    );
     return {
       threadDigest: timestampRes.digests[0],
+      ipfsHash: ipfsRes.hash,
       id
     };
   } catch (e) {
@@ -34,40 +48,57 @@ const timestampThread = async ({ id }) => {
   }
 };
 
-const replyWithDigest = async ({ id, threadDigest }) => {
-  console.log("replying");
+const replyResults = async ({ id, threadDigest, ipfsHash }) => {
   try {
-    const status = `SHA256: ${threadDigest.digest}\n\nSee more: https://timestamp.decred.org/results?digests=${threadDigest.digest}&timestamp=false`;
-    await T.post("statuses/update", { status, in_reply_to_status_id: id, auto_populate_reply_metadata: "true" });
-    console.log("replied tweet with dcrtime info");
+    const status = `SHA256: ${
+      threadDigest.digest
+    }\n\nSee more: https://timestamp.decred.org/results?digests=${
+      threadDigest.digest
+    }&timestamp=false \n Thread stored in IPFS, check it here: https://ipfs.io/ipfs/${ipfsHash} `;
+    const res = await T.post("statuses/update", {
+      status,
+      in_reply_to_status_id: id,
+      auto_populate_reply_metadata: "true"
+    });
   } catch (e) {
+    logger.error(e);
     return e;
   }
 };
+
+ipfs.on("ready", async () => {
+  const { version } = await ipfs.version();
+  logger.info(`IPFS Connected! Version: ${version}`);
+  startStreaming();
+
+  // Keep this line for now so it can be used for testing purposes
+  // dealWithTweet("1116024316339130369");
+});
 
 const dealWithTweet = id => {
+  logger.info(`dealing with tweet ${id}`);
   try {
-    return asyncPipe(
-      timestampThread,
-      replyWithDigest
-    )({ id });
+    return asyncPipe(processTweetThread, replyResults)({ id });
   } catch (e) {
     return e;
   }
 };
 
-const stream = T.stream("statuses/filter", { track: "@dcrtimestampbot", retry: true });
+const startStreaming = () => {
+  const stream = T.stream("statuses/filter", {
+    track: process.env.TRACKED_WORD,
+    retry: true
+  });
+  logger.info("Waiting for tweets to show up...");
+  stream.on("tweet", async tweet => {
+    try {
+      await dealWithTweet(tweet.id_str);
+    } catch (e) {
+      logger.error("dealWithTweet error:", e);
+    }
+  });
 
-console.log("streaming...");
-stream.on("tweet", async (tweet) => {
-  console.log("got one tweet");
-  try {
-    await dealWithTweet(tweet.id_str);
-  } catch (e) {
-    console.log("Oops, something failed", e);
-  }
-});
-
-stream.on("error", (e) => {
-  console.log("Something bad from Twitter", e);
-});
+  stream.on("error", e => {
+    logger.error(e);
+  });
+};
