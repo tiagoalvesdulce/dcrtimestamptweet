@@ -7,10 +7,8 @@ export const getThread = async ({ T, id }) => {
   try {
     const thread = [];
     await getThreadAux(T, id, thread);
-    // console.log("got thread", thread);
     return thread;
   } catch (e) {
-    console.log("e", e);
     throw e;
   }
 };
@@ -68,3 +66,11 @@ export const normalizeDataToDcrtime = input => {
   }
   throw new TypeError("Input should be a string");
 };
+
+export const replyTemplate = (
+  digest,
+  ipfsHash
+) => `This thread is stored on IPFS and it will be timestamped within the next hour. \n 
+Timestamping status: https://timestamp.decred.org/results?digests=${digest}&timestamp=false \n \n 
+Thread json: https://ipfs.io/ipfs/${ipfsHash}
+`;

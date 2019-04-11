@@ -22,8 +22,7 @@ export const addThreadToIPFS = filename => async thread => {
 
     return results[0];
   } catch (e) {
-    log.error(e);
-    console.log(e);
+    throw e;
   }
 };
 

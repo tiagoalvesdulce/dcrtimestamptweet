@@ -5,7 +5,8 @@ import {
   getThread,
   stringify,
   encodeToBase64,
-  normalizeDataToDcrtime
+  normalizeDataToDcrtime,
+  replyTemplate
 } from "./helpers";
 import { ipfs, addThreadToIPFS } from "./services/ipfs";
 import logger from "./log";
@@ -48,17 +49,14 @@ const processTweetThread = async ({ id }) => {
       id
     };
   } catch (e) {
+    logger.error(`processTweetThreadError ${id}: ${e}`);
     return e;
   }
 };
 
 const replyResults = async ({ id, threadDigest, ipfsHash }) => {
   try {
-    const status = `SHA256: ${
-      threadDigest.digest
-    }\n\nSee more: https://timestamp.decred.org/results?digests=${
-      threadDigest.digest
-    }&timestamp=false \n Thread stored in IPFS, check it here: https://ipfs.io/ipfs/${ipfsHash} `;
+    const status = replyTemplate(threadDigest.digest, ipfsHash);
     const res = await T.post("statuses/update", {
       status,
       in_reply_to_status_id: id,
@@ -75,6 +73,16 @@ ipfs.on("ready", async () => {
   logger.info(`IPFS Connected! Version: ${version}`);
   startStreaming();
 
+  const tenSecondsInMs = 10000;
+  setInterval(() => {
+    ipfs.swarm.peers((err, peersInfo) => {
+      if (err) {
+        logger.error(err);
+        return;
+      }
+      logger.debug(`IPFS connected to ${peersInfo.length} peers`);
+    });
+  }, tenSecondsInMs);
   // Keep this line for now so it can be used for testing purposes
   // dealWithTweet("1116024316339130369");
 });
