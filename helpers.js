@@ -27,7 +27,15 @@ const getThreadAux = async (T, id, thread) => {
 
 const getTweetById = async (T, id) => {
   try {
-    const { data: { user, id_str, created_at, text, in_reply_to_status_id_str: repliedid } } = await T.get("statuses/show", { id });
+    const {
+      data: {
+        user,
+        id_str,
+        created_at,
+        text,
+        in_reply_to_status_id_str: repliedid
+      }
+    } = await T.get("statuses/show", { id });
     return {
       user: {
         id_str: user.id_str,
@@ -44,17 +52,25 @@ const getTweetById = async (T, id) => {
   }
 };
 
-export const stringify = (obj) => {
+export const stringify = obj => {
   if (obj && typeof obj == "object") {
     return JSON.stringify(obj);
   }
   throw new TypeError("Input should be a string");
 };
 
-export const encodeToBase64 = (input) => Buffer.from(input).toString("base64");
+export const encodeToBase64 = input => Buffer.from(input).toString("base64");
 export const normalizeDataToDcrtime = input => {
   if (input && typeof input == "string") {
-    return ([input]);
-  };
+    return [input];
+  }
   throw new TypeError("Input should be a string");
 };
+
+export const replyTemplate = (
+  digest,
+  ipfsHash
+) => `This thread is stored on IPFS and it will be timestamped within the next hour. \n 
+Timestamping status: https://timestamp.decred.org/results?digests=${digest}&timestamp=false \n \n 
+Thread json: https://ipfs.io/ipfs/${ipfsHash}
+`;
