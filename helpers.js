@@ -52,6 +52,17 @@ const getTweetById = async (T, id) => {
   }
 };
 
+export const buildDmPost = (id, message)  => {
+  return {
+    "event": {
+      "type": "message_create",
+      "message_create": {
+        "target": { "recipient_id": id }, "message_data": { "text": message },
+      }
+    }
+  };
+};
+
 export const stringify = obj => {
   if (obj && typeof obj == "object") {
     return JSON.stringify(obj);

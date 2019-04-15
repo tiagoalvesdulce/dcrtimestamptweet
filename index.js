@@ -6,7 +6,8 @@ import {
   stringify,
   encodeToBase64,
   normalizeDataToDcrtime,
-  replyTemplate
+  replyTemplate,
+  buildDmPost,
 } from "./helpers";
 import { ipfs, addThreadToIPFS } from "./services/ipfs";
 import logger from "./log";
@@ -22,10 +23,10 @@ const T = new Twit({
 
 const asyncPipe = (...fns) => x => fns.reduce(async (y, f) => f(await y), x);
 
-const processTweetThread = async ({ id }) => {
+const processTweetThread = async ({ tweetId, userId }) => {
   try {
-    logger.debug(`getting thread for tweet id ${id}`);
-    const thread = await getThread({ T, id });
+    logger.debug(`getting thread for tweet id ${tweetId}`);
+    const thread = await getThread({ T, tweetId });
     const { digests } = await asyncPipe(
       stringify,
       encodeToBase64,
@@ -46,27 +47,43 @@ const processTweetThread = async ({ id }) => {
     return {
       threadDigest: digests[0],
       ipfsHash,
-      id
+      tweetId,
+      userId,
     };
   } catch (e) {
-    logger.error(`processTweetThreadError ${id}: ${e}`);
+    logger.error(`processTweetThreadError ${tweetId}: ${e}`);
     return e;
   }
 };
 
-const replyResults = async ({ id, threadDigest, ipfsHash }) => {
+const replyResults = async ({ userId, tweetId, threadDigest, ipfsHash }) => {
   try {
     const status = replyTemplate(threadDigest.digest, ipfsHash);
     const res = await T.post("statuses/update", {
       status,
-      in_reply_to_status_id: id,
+      in_reply_to_status_id: tweetId,
       auto_populate_reply_metadata: "true"
     });
+    return {
+      status,
+      userId,
+    };
   } catch (e) {
     logger.error(e);
     return e;
   }
 };
+
+const dmResult = async ({ userId, status }) => {
+  try {
+    const params = buildDmPost(userId, status);
+    await T.post("direct_messages/events/new", params);
+    logger.info(`DM sent to user: ${userId}`);
+  } catch (e) {
+    logger.error(e);
+    return e;
+  }
+}
 
 ipfs.on("ready", async () => {
   const { version } = await ipfs.version();
@@ -87,10 +104,10 @@ ipfs.on("ready", async () => {
   // dealWithTweet("1116024316339130369");
 });
 
-const dealWithTweet = id => {
-  logger.info(`dealing with tweet ${id}`);
+const dealWithTweet = ({ userId, tweetId }) => {
+  logger.info(`dealing with tweet ${tweetId}`);
   try {
-    return asyncPipe(processTweetThread, replyResults)({ id });
+    return asyncPipe(processTweetThread, replyResults, dmResult)({ userId, tweetId });
   } catch (e) {
     return e;
   }
@@ -108,7 +125,7 @@ const startStreaming = () => {
       return;
     }
     try {
-      await dealWithTweet(tweet.id_str);
+      await dealWithTweet({ userId: tweet.user.id_str, tweetId: tweet.id_str });
     } catch (e) {
       logger.error("dealWithTweet error:", e);
     }
