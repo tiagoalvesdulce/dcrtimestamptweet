@@ -78,10 +78,18 @@ export const normalizeDataToDcrtime = input => {
   throw new TypeError("Input should be a string");
 };
 
+const templates = [
+  "Have you asked for me Sir? Anyway, this thread is stored with IPFS and should timestamped within the next hour.",
+  "I'm glad you called me :D Thread successfully added to IPFS and the timestamp is on its way.",
+  "This thread is stored on IPFS and it will be timestamped within the next hour.",
+  "Hello, your thread is timestamped. \nThanks for calling me!",
+  "Hey here is your thread timestamped so you can always remember it!"
+];
+
 export const replyTemplate = (
   digest,
   ipfsHash
-) => `This thread is stored on IPFS and it will be timestamped within the next hour. \n 
+) => `${ templates[Math.floor(Math.random() * 5)] } \n
 Timestamping status: https://timestamp.decred.org/results?digests=${digest}&timestamp=false \n \n 
 Thread json: https://ipfs.io/ipfs/${ipfsHash}
 `;
