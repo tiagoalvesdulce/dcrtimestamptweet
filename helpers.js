@@ -3,7 +3,7 @@
  * @param {Twit} T Twit object
  * @param {string} id Id to get thread
  */
-export const getThread = async ({ T, id }) => {
+export const getThread = async (T, id) => {
   try {
     const thread = [];
     await getThreadAux(T, id, thread);
@@ -52,12 +52,13 @@ const getTweetById = async (T, id) => {
   }
 };
 
-export const buildDmPost = (id, message)  => {
+export const buildDmPost = (id, message) => {
   return {
-    "event": {
-      "type": "message_create",
-      "message_create": {
-        "target": { "recipient_id": id }, "message_data": { "text": message },
+    event: {
+      type: "message_create",
+      message_create: {
+        target: { recipient_id: id },
+        message_data: { text: message }
       }
     }
   };
@@ -86,10 +87,9 @@ const templates = [
   "Hey here is your thread timestamped so you can always remember it!"
 ];
 
-export const replyTemplate = (
-  digest,
-  ipfsHash
-) => `${ templates[Math.floor(Math.random() * 5)] } \n
+export const replyTemplate = (digest, ipfsHash) => `${
+  templates[Math.floor(Math.random() * 5)]
+} \n
 Timestamping status: https://timestamp.decred.org/results?digests=${digest}&timestamp=false \n \n 
 Thread json: https://ipfs.io/ipfs/${ipfsHash}
 `;

@@ -7,7 +7,7 @@ import {
   encodeToBase64,
   normalizeDataToDcrtime,
   replyTemplate,
-  buildDmPost,
+  buildDmPost
 } from "./helpers";
 import { ipfs, addThreadToIPFS } from "./services/ipfs";
 import logger from "./log";
@@ -26,7 +26,7 @@ const asyncPipe = (...fns) => x => fns.reduce(async (y, f) => f(await y), x);
 const processTweetThread = async ({ tweetId, userId }) => {
   try {
     logger.debug(`getting thread for tweet id ${tweetId}`);
-    const thread = await getThread({ T, tweetId });
+    const thread = await getThread(T, tweetId);
     const { digests } = await asyncPipe(
       stringify,
       encodeToBase64,
@@ -48,7 +48,7 @@ const processTweetThread = async ({ tweetId, userId }) => {
       threadDigest: digests[0],
       ipfsHash,
       tweetId,
-      userId,
+      userId
     };
   } catch (e) {
     logger.error(`processTweetThreadError ${tweetId}: ${e}`);
@@ -66,7 +66,7 @@ const replyResults = async ({ userId, tweetId, threadDigest, ipfsHash }) => {
     });
     return {
       status,
-      userId,
+      userId
     };
   } catch (e) {
     logger.error(e);
@@ -83,7 +83,7 @@ const dmResult = async ({ userId, status }) => {
     logger.error(e);
     return e;
   }
-}
+};
 
 ipfs.on("ready", async () => {
   const { version } = await ipfs.version();
@@ -107,7 +107,10 @@ ipfs.on("ready", async () => {
 const dealWithTweet = ({ userId, tweetId }) => {
   logger.info(`dealing with tweet ${tweetId}`);
   try {
-    return asyncPipe(processTweetThread, replyResults, dmResult)({ userId, tweetId });
+    return asyncPipe(processTweetThread, replyResults, dmResult)({
+      userId,
+      tweetId
+    });
   } catch (e) {
     return e;
   }
@@ -120,7 +123,7 @@ const startStreaming = () => {
   });
   logger.info("Waiting for tweets to show up...");
   stream.on("tweet", async tweet => {
-    const { retweeted_status } = tweet
+    const { retweeted_status } = tweet;
     if (retweeted_status) {
       return;
     }
