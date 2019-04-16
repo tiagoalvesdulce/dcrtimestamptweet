@@ -59,7 +59,7 @@ const processTweetThread = async ({ tweetId, userId }) => {
 const replyResults = async ({ userId, tweetId, threadDigest, ipfsHash }) => {
   try {
     const status = replyTemplate(threadDigest.digest, ipfsHash);
-    const res = await T.post("statuses/update", {
+    await T.post("statuses/update", {
       status,
       in_reply_to_status_id: tweetId,
       auto_populate_reply_metadata: "true"
@@ -86,11 +86,11 @@ const dmResult = async ({ userId, status }) => {
 };
 
 ipfs.on("ready", async () => {
+  const IPFS_INTERVAL = 10000;
   const { version } = await ipfs.version();
   logger.info(`IPFS Connected! Version: ${version}`);
   startStreaming();
 
-  const tenSecondsInMs = 10000;
   setInterval(() => {
     ipfs.swarm.peers((err, peersInfo) => {
       if (err) {
@@ -99,7 +99,7 @@ ipfs.on("ready", async () => {
       }
       logger.debug(`IPFS connected to ${peersInfo.length} peers`);
     });
-  }, tenSecondsInMs);
+  }, IPFS_INTERVAL);
   // Keep this line for now so it can be used for testing purposes
   // dealWithTweet("1116024316339130369");
 });
