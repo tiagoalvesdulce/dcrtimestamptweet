@@ -123,8 +123,9 @@ const startStreaming = () => {
   });
   logger.info("Waiting for tweets to show up...");
   stream.on("tweet", async tweet => {
-    const { retweeted_status } = tweet;
-    if (retweeted_status) {
+    const { retweeted_status, in_reply_to_user_id_str } = tweet;
+    // if tweet is a retweet or a reply to the bot, do nothing
+    if (retweeted_status || in_reply_to_user_id_str === process.env.BOT_USER_ID) {
       return;
     }
     try {
