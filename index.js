@@ -125,9 +125,11 @@ const startStreaming = () => {
   stream.on("tweet", async tweet => {
     const { retweeted_status, in_reply_to_screen_name,
       in_reply_to_status_id_str } = tweet;
+
+    const isRetweet = !!retweeted_status;
+    const isReplyToBot = in_reply_to_status_id_str && in_reply_to_screen_name === process.env.TRACKED_WORD.substring(1);
     // if tweet is a retweet or a reply to the bot, do nothing
-    if (retweeted_status ||
-      (in_reply_to_status_id_str && in_reply_to_screen_name === process.env.TRACKED_WORD.substring(1))) {
+    if (isRetweet || isReplyToBot) {
       return;
     }
     try {
