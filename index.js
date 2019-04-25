@@ -117,12 +117,6 @@ const dealWithTweet = ({ userId, tweetId }) => {
   }
 };
 
-const validateBotTag = ({ text }) => {
-  const regex = /^(@[a-zA-z1..0]+[ ])*/;
-  const result = regex.exec(text);
-  logger.debug(result);
-};
-
 const startStreaming = () => {
   const stream = T.stream("statuses/filter", {
     track: process.env.TRACKED_WORD,
