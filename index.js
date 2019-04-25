@@ -7,7 +7,8 @@ import {
   encodeToBase64,
   normalizeDataToDcrtime,
   replyTemplate,
-  buildDmPost
+  buildDmPost,
+  validateTweet
 } from "./helpers";
 import { ipfs, addThreadToIPFS } from "./services/ipfs";
 import logger from "./log";
@@ -116,6 +117,12 @@ const dealWithTweet = ({ userId, tweetId }) => {
   }
 };
 
+const validateBotTag = ({ text }) => {
+  const regex = /^(@[a-zA-z1..0]+[ ])*/;
+  const result = regex.exec(text);
+  logger.debug(result);
+};
+
 const startStreaming = () => {
   const stream = T.stream("statuses/filter", {
     track: process.env.TRACKED_WORD,
@@ -123,15 +130,10 @@ const startStreaming = () => {
   });
   logger.info("Waiting for tweets to show up...");
   stream.on("tweet", async tweet => {
-    const { retweeted_status, in_reply_to_screen_name,
-      in_reply_to_status_id_str } = tweet;
-
-    const isRetweet = !!retweeted_status;
-    const isReplyToBot = in_reply_to_status_id_str && in_reply_to_screen_name === process.env.TRACKED_WORD.substring(1);
-    // if tweet is a retweet or a reply to the bot, do nothing
-    if (isRetweet || isReplyToBot) {
+    if (!validateTweet(tweet, process.env.TRACKED_WORD)) {
       return;
     }
+
     try {
       await dealWithTweet({ userId: tweet.user.id_str, tweetId: tweet.id_str });
     } catch (e) {
