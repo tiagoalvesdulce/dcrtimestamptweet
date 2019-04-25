@@ -68,7 +68,7 @@ export const stringify = obj => {
   if (obj && typeof obj == "object") {
     return JSON.stringify(obj);
   }
-  throw new TypeError("Input should be a string");
+  throw new TypeError("Input should be a object");
 };
 
 export const encodeToBase64 = input => Buffer.from(input).toString("base64");
@@ -96,3 +96,40 @@ export const replyTemplate = (digest, ipfsHash) => `${
 Timestamping status: https://timestamp.decred.org/results?digests=${digest}&timestamp=false \n \n
 Thread json: https://ipfs.io/ipfs/${ipfsHash}
 `;
+
+export const cleanTweetText = text => {
+  if (!text || typeof text !== "string") {
+    throw new TypeError("Input must be a valid string");
+  }
+  const undesiredTags = /^(@[a-zA-z_0-9]+[ ])*/.exec(text)[0];
+  const cleanedText = undesiredTags ? text.replace(undesiredTags, "") : text;
+
+  return cleanedText;
+};
+
+export const isRetweet = tweet => {
+  const isRetweet = !!tweet.retweeted_status;
+  return isRetweet;
+};
+
+export const isReplyToBotTweet = (tweet, tag) => {
+  const { in_reply_to_screen_name, in_reply_to_status_id_str } = tweet;
+  const isReplyToBot =
+    in_reply_to_status_id_str && in_reply_to_screen_name === tag;
+  return isReplyToBot;
+};
+
+export const validateTweet = (tweet, tag) => {
+  if (!tweet || !tweet.text || typeof tweet.text !== "string") {
+    throw new TypeError("Invalid tweet input");
+  }
+
+  if (isReplyToBotTweet(tweet, tag) || isRetweet(tweet)) {
+    return false;
+  }
+
+  const { text } = tweet;
+  const cleanedText = cleanTweetText(text);
+  const botIsMentioned = cleanedText.toLowerCase().includes(tag);
+  return botIsMentioned;
+};
