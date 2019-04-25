@@ -120,6 +120,18 @@ describe("validateTweet", async assert => {
     expected: true
   });
   assert({
+    given: "a text containing the mention preceded by a blank space",
+    should: "return true",
+    actual: Try(validateTweet, { text: " @tag" }, "@tag"),
+    expected: true
+  });
+  assert({
+    given: "a text containing the mention followed by a blank space",
+    should: "return false",
+    actual: Try(validateTweet, { text: "@tag " }, "@tag"),
+    expected: false
+  });
+  assert({
     given: "invalid input",
     should: "throw",
     actual: Try(validateTweet, null),
