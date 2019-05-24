@@ -104,15 +104,15 @@ ipfs.on("ready", async () => {
   // dealWithTweet("1116024316339130369");
 });
 
-const dealWithTweet = ({ userId, tweetId }) => {
+const dealWithTweet = async ({ userId, tweetId }) => {
   logger.info(`dealing with tweet ${tweetId} from user ${userId}`);
   try {
-    return asyncPipe(processTweetThread, replyResults, dmResult)({
+    await asyncPipe(processTweetThread, replyResults, dmResult)({
       userId,
       tweetId
     });
   } catch (e) {
-    throw e;
+    logger.error("dealWithTweet error:", e);
   }
 };
 
@@ -122,15 +122,11 @@ const startStreaming = () => {
     retry: true
   });
   logger.info("Waiting for tweets to show up...");
-  stream.on("tweet", async tweet => {
+  stream.on("tweet", tweet => {
     if (!validateTweet(tweet, process.env.TRACKED_WORD)) {
       return;
     }
-    try {
-      await dealWithTweet({ userId: tweet.user.id_str, tweetId: tweet.id_str });
-    } catch (e) {
-      logger.error("dealWithTweet error:", e);
-    }
+    dealWithTweet({ userId: tweet.user.id_str, tweetId: tweet.id_str });
   });
 
   stream.on("error", e => {
