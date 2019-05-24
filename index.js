@@ -89,6 +89,7 @@ ipfs.on("ready", async () => {
   const IPFS_INTERVAL = 10000;
   const { version } = await ipfs.version();
   logger.info(`IPFS Connected! Version: ${version}`);
+
   startStreaming();
 
   setInterval(() => {
@@ -100,11 +101,13 @@ ipfs.on("ready", async () => {
       logger.debug(`IPFS connected to ${peersInfo.length} peers`);
     });
   }, IPFS_INTERVAL);
-  // Keep this line for now so it can be used for testing purposes
-  // dealWithTweet("1116024316339130369");
 });
 
 const dealWithTweet = async ({ userId, tweetId }) => {
+  if (!userId || !tweetId) {
+    logger.error("dealWithTweet: invalid input");
+    return;
+  }
   logger.info(`dealing with tweet ${tweetId} from user ${userId}`);
   try {
     await asyncPipe(processTweetThread, replyResults, dmResult)({
@@ -117,11 +120,13 @@ const dealWithTweet = async ({ userId, tweetId }) => {
 };
 
 const startStreaming = () => {
-  const stream = T.stream("statuses/filter", {
+  let stream = T.stream("statuses/filter", {
     track: process.env.TRACKED_WORD,
     retry: true
   });
+
   logger.info("Waiting for tweets to show up...");
+
   stream.on("tweet", tweet => {
     if (!validateTweet(tweet, process.env.TRACKED_WORD)) {
       return;
@@ -130,6 +135,15 @@ const startStreaming = () => {
   });
 
   stream.on("error", e => {
-    logger.error(e);
+    logger.error(`stream error: ${e}`);
+  });
+
+  stream.on("connected", () => {
+    logger.info("Twitter stream connected!");
+  });
+
+  stream.on("disconnect", disconnectMessage => {
+    logger.error(`stream disconnected: ${disconnectMessage}`);
+    stream.start();
   });
 };
