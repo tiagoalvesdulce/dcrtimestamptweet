@@ -52,8 +52,9 @@ const processTweetThread = async ({ tweetId, userId }) => {
       userId
     };
   } catch (e) {
-    logger.error(`processTweetThreadError ${tweetId}: ${e}`);
-    return e;
+    throw new Error(
+      `processTweetThread error tweetID: ${tweetId}, error: ${e}`
+    );
   }
 };
 
@@ -70,8 +71,7 @@ const replyResults = async ({ userId, tweetId, threadDigest, ipfsHash }) => {
       userId
     };
   } catch (e) {
-    logger.error(e);
-    return e;
+    throw new Error(`replyResults error tweetID: ${tweetId} `);
   }
 };
 
@@ -81,8 +81,7 @@ const dmResult = async ({ userId, status }) => {
     await T.post("direct_messages/events/new", params);
     logger.info(`DM sent to user: ${userId}`);
   } catch (e) {
-    logger.error(e);
-    return e;
+    throw new Error(`dmResult error userId: ${userId} `);
   }
 };
 
@@ -106,14 +105,14 @@ ipfs.on("ready", async () => {
 });
 
 const dealWithTweet = ({ userId, tweetId }) => {
-  logger.info(`dealing with tweet ${tweetId}`);
+  logger.info(`dealing with tweet ${tweetId} from user ${userId}`);
   try {
     return asyncPipe(processTweetThread, replyResults, dmResult)({
       userId,
       tweetId
     });
   } catch (e) {
-    return e;
+    throw e;
   }
 };
 
@@ -127,7 +126,6 @@ const startStreaming = () => {
     if (!validateTweet(tweet, process.env.TRACKED_WORD)) {
       return;
     }
-
     try {
       await dealWithTweet({ userId: tweet.user.id_str, tweetId: tweet.id_str });
     } catch (e) {
