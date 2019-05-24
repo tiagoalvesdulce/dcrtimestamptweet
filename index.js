@@ -52,8 +52,9 @@ const processTweetThread = async ({ tweetId, userId }) => {
       userId
     };
   } catch (e) {
-    logger.error(`processTweetThreadError ${tweetId}: ${e}`);
-    return e;
+    throw new Error(
+      `processTweetThread error tweetID: ${tweetId}, error: ${e}`
+    );
   }
 };
 
@@ -70,8 +71,7 @@ const replyResults = async ({ userId, tweetId, threadDigest, ipfsHash }) => {
       userId
     };
   } catch (e) {
-    logger.error(e);
-    return e;
+    throw new Error(`replyResults error tweetID: ${tweetId} `);
   }
 };
 
@@ -81,8 +81,7 @@ const dmResult = async ({ userId, status }) => {
     await T.post("direct_messages/events/new", params);
     logger.info(`DM sent to user: ${userId}`);
   } catch (e) {
-    logger.error(e);
-    return e;
+    throw new Error(`dmResult error userId: ${userId} `);
   }
 };
 
@@ -90,6 +89,7 @@ ipfs.on("ready", async () => {
   const IPFS_INTERVAL = 10000;
   const { version } = await ipfs.version();
   logger.info(`IPFS Connected! Version: ${version}`);
+
   startStreaming();
 
   setInterval(() => {
@@ -101,41 +101,53 @@ ipfs.on("ready", async () => {
       logger.debug(`IPFS connected to ${peersInfo.length} peers`);
     });
   }, IPFS_INTERVAL);
-  // Keep this line for now so it can be used for testing purposes
-  // dealWithTweet("1116024316339130369");
 });
 
-const dealWithTweet = ({ userId, tweetId }) => {
-  logger.info(`dealing with tweet ${tweetId}`);
+const dealWithTweet = async ({ userId, tweetId }) => {
+  if (!userId || !tweetId) {
+    logger.error("dealWithTweet: invalid input");
+    return;
+  }
+  logger.info(`dealing with tweet ${tweetId} from user ${userId}`);
   try {
-    return asyncPipe(processTweetThread, replyResults, dmResult)({
+    await asyncPipe(processTweetThread, replyResults, dmResult)({
       userId,
       tweetId
     });
   } catch (e) {
-    return e;
+    logger.error("dealWithTweet error:", e);
   }
 };
 
 const startStreaming = () => {
-  const stream = T.stream("statuses/filter", {
+  let stream = T.stream("statuses/filter", {
     track: process.env.TRACKED_WORD,
     retry: true
   });
+
   logger.info("Waiting for tweets to show up...");
-  stream.on("tweet", async tweet => {
+
+  stream.on("tweet", tweet => {
     if (!validateTweet(tweet, process.env.TRACKED_WORD)) {
       return;
     }
-
-    try {
-      await dealWithTweet({ userId: tweet.user.id_str, tweetId: tweet.id_str });
-    } catch (e) {
-      logger.error("dealWithTweet error:", e);
-    }
+    dealWithTweet({ userId: tweet.user.id_str, tweetId: tweet.id_str }).catch(
+      e => {
+        logger.error(e);
+      }
+    );
   });
 
   stream.on("error", e => {
-    logger.error(e);
+    logger.error(`stream error: ${e}`);
+  });
+
+  stream.on("connected", () => {
+    logger.info("Twitter stream connected!");
+  });
+
+  stream.on("disconnect", disconnectMessage => {
+    logger.error(`stream disconnected: ${disconnectMessage}`);
+    stream.start();
   });
 };
