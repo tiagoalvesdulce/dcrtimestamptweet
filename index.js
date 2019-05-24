@@ -131,7 +131,11 @@ const startStreaming = () => {
     if (!validateTweet(tweet, process.env.TRACKED_WORD)) {
       return;
     }
-    dealWithTweet({ userId: tweet.user.id_str, tweetId: tweet.id_str });
+    dealWithTweet({ userId: tweet.user.id_str, tweetId: tweet.id_str }).catch(
+      e => {
+        logger.error(e);
+      }
+    );
   });
 
   stream.on("error", e => {
