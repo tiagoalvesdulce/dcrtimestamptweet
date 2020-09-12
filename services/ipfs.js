@@ -3,13 +3,13 @@ import logger from "../log.js";
 
 export const ipfs = new IPFS({ silent: false });
 
-export const addThreadToIPFS = filename => async thread => {
+export const addThreadToIPFS = (filename) => async (thread) => {
   try {
     const files = [
       {
         path: "timestampedthreads/" + filename,
-        content: ipfs.types.Buffer.from(thread)
-      }
+        content: ipfs.types.Buffer.from(thread),
+      },
     ];
     const results = await ipfs.add(files);
     // const validate = await getFromIpfs();

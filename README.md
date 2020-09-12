@@ -20,7 +20,7 @@ Twitter bot to timestamp a thread when a chosen keyword is mentioned. This bot u
     TWITTER_CONSUMER_SECRET=<GENERATED_API_KEY_SECRET>
     TWITTER_ACCESS_TOKEN=<GENERATED_ACCESS_TOKEN>
     TWITTER_ACCESS_TOKEN_SECRET=<GENERATED_ACCESS_TOKEN_SECRET>
-    TRACKED_WORD="@dcrtimestamptweet" // mention which will call the bot
+    TRACKED_WORD="@dcrtimestampbot" // mention which will call the bot
     ```
 
 5. Run yarn command
@@ -48,9 +48,9 @@ It is not necessary to run IPFS in order to make the bot work properly, although
 
 ### install IPFS
 
-1. Follow the [IPFS Installation instructions](https://docs.ipfs.io/introduction/install/) 
+1. Follow the [IPFS Installation instructions](https://docs.ipfs.io/introduction/install/)
 
-2. Run IPFS Daemon 
+2. Run IPFS Daemon
     ```
     $ ipfs daemon
     ```
